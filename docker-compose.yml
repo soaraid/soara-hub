@@ -1,0 +1,20 @@
+services:
+  registry:
+    image: registry:2.7
+    container_name: private-registry
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      # Authentication
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: "Private Docker Registry"
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+
+      # Delete Permission
+      REGISTRY_STORAGE_DELETE_ENABLED: "true"
+    volumes:
+      - ./data:/var/lib/registry
+      - ./auth:/auth
+      - ./config.yml:/etc/docker/registry/config.yml:ro
+    user: "1000:1000"

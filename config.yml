@@ -1,0 +1,21 @@
+version: 0.1
+log:
+  level: info
+  formatter: text
+storage:
+  filesystem:
+    rootdirectory: /var/lib/registry
+  delete:
+    enabled: true
+  maintenance:
+    uploadpurging:
+      enabled: true
+      age: 168h
+      interval: 24h
+      dryrun: false
+http:
+  addr: :5000
+  headers:
+    X-Content-Type-Options: [nosniff]
+    X-Frame-Options: [DENY]
+    X-XSS-Protection: [1; mode=block]
