@@ -6,15 +6,28 @@ services:
     ports:
       - "5000:5000"
     environment:
-      # Authentication
       REGISTRY_AUTH: htpasswd
       REGISTRY_AUTH_HTPASSWD_REALM: "Private Docker Registry"
       REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
-
-      # Delete Permission
       REGISTRY_STORAGE_DELETE_ENABLED: "true"
     volumes:
       - ./data:/var/lib/registry
       - ./auth:/auth
       - ./config.yml:/etc/docker/registry/config.yml:ro
     user: "1000:1000"
+
+  registry-ui:
+    image: joxit/docker-registry-ui:latest
+    container_name: registry-ui
+    restart: unless-stopped
+    ports:
+      - "8101:80"
+    environment:
+      SINGLE_REGISTRY: "true"
+      REGISTRY_TITLE: "Soara Hub"
+      REGISTRY_URL: "https://hub.setidaknya.my.id"
+      DELETE_IMAGES: "true"
+      SHOW_CONTENT_DIGEST: "true"
+      SHOW_CATALOG_NB_TAGS: "true"
+      CATALOG_ELEMENTS_LIMIT: "1000"
+      REGISTRY_SECURED: "true"
