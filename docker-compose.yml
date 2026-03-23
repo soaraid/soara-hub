@@ -17,17 +17,22 @@ services:
     user: "1000:1000"
 
   registry-ui:
-    image: joxit/docker-registry-ui:latest
+    image: soaraid/registry-ui:latest
     container_name: registry-ui
     restart: unless-stopped
     ports:
-      - "8101:80"
+      - "8101:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
-      SINGLE_REGISTRY: "true"
-      REGISTRY_TITLE: "Soara Hub"
-      REGISTRY_URL: "https://hub.setidaknya.my.id"
-      DELETE_IMAGES: "true"
-      SHOW_CONTENT_DIGEST: "true"
-      SHOW_CATALOG_NB_TAGS: "true"
-      CATALOG_ELEMENTS_LIMIT: "1000"
-      REGISTRY_SECURED: "true"
+      REGISTRY_URL: http://registry:5000
+      REGISTRY_USERNAME: root
+      REGISTRY_PASSWORD: 123123123
+      REGISTRY_BEARER_TOKEN: ""
+
+      APP_AUTH_USERNAME: operator
+      APP_AUTH_PASSWORD: 123123123
+      APP_SESSION_SECRET: replace-here-with-a-long-random-secret
+
+      APP_BRAND_NAME: Soara
+      APP_PRODUCT_NAME: Registry UI
