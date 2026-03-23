@@ -3,10 +3,18 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-AUTH_DIR="$ROOT_DIR/auth"
-DATA_DIR="$ROOT_DIR/data"
-HTPASSWD_FILE="$AUTH_DIR/htpasswd"
 HTPASSWD_IMAGE="${HTPASSWD_IMAGE:-httpd:2.4-alpine}"
+ENV_FILE="${ENV_FILE:-$ROOT_DIR/.env}"
+
+resolve_path() {
+  local path="$1"
+
+  if [[ "$path" = /* ]]; then
+    printf '%s\n' "$path"
+  else
+    printf '%s\n' "$ROOT_DIR/${path#./}"
+  fi
+}
 
 usage() {
   cat <<'EOF'
@@ -17,6 +25,7 @@ Creates auth/htpasswd and the local data directories required by the registry.
 If no username or password is provided, the script prompts for them.
 
 Environment:
+  ENV_FILE         Override the environment file path (default: ./.env)
   HTPASSWD_IMAGE   Override the Docker image used to generate htpasswd
 EOF
 }
@@ -31,8 +40,20 @@ if [[ $# -gt 2 ]]; then
   exit 1
 fi
 
-USERNAME="${1:-}"
-PASSWORD="${2:-}"
+if [[ -f "$ENV_FILE" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  . "$ENV_FILE"
+  set +a
+fi
+
+USERNAME="${1:-${REGISTRY_USERNAME:-}}"
+PASSWORD="${2:-${REGISTRY_PASSWORD:-}}"
+LOGIN_HOST="${REGISTRY_LOGIN_HOST:-localhost}"
+LOGIN_PORT="${REGISTRY_PORT:-5000}"
+AUTH_DIR="$(resolve_path "${REGISTRY_AUTH_DIR:-./auth}")"
+DATA_DIR="$(resolve_path "${REGISTRY_DATA_DIR:-./data}")"
+HTPASSWD_FILE="$AUTH_DIR/htpasswd"
 
 if [[ -z "$USERNAME" ]]; then
   read -r -p "Registry username: " USERNAME
@@ -62,5 +83,5 @@ Registry bootstrap complete.
 
 Next:
   docker compose up -d
-  docker login localhost:5000
+  docker login ${LOGIN_HOST}:${LOGIN_PORT}
 EOF

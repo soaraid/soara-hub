@@ -1,38 +1,36 @@
 services:
   registry:
     image: registry:2.7
-    container_name: registry
+    container_name: ${REGISTRY_CONTAINER_NAME:-registry}
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      - "${REGISTRY_PORT:-5000}:5000"
     environment:
       REGISTRY_AUTH: htpasswd
-      REGISTRY_AUTH_HTPASSWD_REALM: "Private Docker Registry"
-      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: "${REGISTRY_AUTH_REALM:-Private Docker Registry}"
+      REGISTRY_AUTH_HTPASSWD_PATH: ${REGISTRY_AUTH_HTPASSWD_PATH:-/auth/htpasswd}
       REGISTRY_STORAGE_DELETE_ENABLED: "true"
     volumes:
-      - ./data:/var/lib/registry
-      - ./auth:/auth
-      - ./config.yml:/etc/docker/registry/config.yml:ro
-    user: "1000:1000"
+      - ${REGISTRY_DATA_DIR:-./data}:/var/lib/registry
+      - ${REGISTRY_AUTH_DIR:-./auth}:/auth
+      - ${REGISTRY_CONFIG_FILE:-./config.yml}:/etc/docker/registry/config.yml:ro
+    user: "${REGISTRY_UID:-1000}:${REGISTRY_GID:-1000}"
 
   registry-ui:
     image: soaraid/registry-ui:latest
-    container_name: registry-ui
+    container_name: ${REGISTRY_UI_CONTAINER_NAME:-registry-ui}
     restart: unless-stopped
     ports:
-      - "8101:3000"
+      - "${REGISTRY_UI_PORT:-8101}:3000"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
-      REGISTRY_URL: http://registry:5000
-      REGISTRY_USERNAME: root
-      REGISTRY_PASSWORD: 123123123
-      REGISTRY_BEARER_TOKEN: ""
-
-      APP_AUTH_USERNAME: operator
-      APP_AUTH_PASSWORD: 123123123
-      APP_SESSION_SECRET: replace-here-with-a-long-random-secret
-
-      APP_BRAND_NAME: Soara
-      APP_PRODUCT_NAME: Registry UI
+      REGISTRY_URL: ${REGISTRY_URL:-http://registry:5000}
+      REGISTRY_USERNAME: ${REGISTRY_USERNAME:?set REGISTRY_USERNAME in .env}
+      REGISTRY_PASSWORD: ${REGISTRY_PASSWORD:?set REGISTRY_PASSWORD in .env}
+      REGISTRY_BEARER_TOKEN: ${REGISTRY_BEARER_TOKEN:-}
+      APP_AUTH_USERNAME: ${APP_AUTH_USERNAME:?set APP_AUTH_USERNAME in .env}
+      APP_AUTH_PASSWORD: ${APP_AUTH_PASSWORD:?set APP_AUTH_PASSWORD in .env}
+      APP_SESSION_SECRET: ${APP_SESSION_SECRET:?set APP_SESSION_SECRET in .env}
+      APP_BRAND_NAME: ${APP_BRAND_NAME:-Soara}
+      APP_PRODUCT_NAME: ${APP_PRODUCT_NAME:-Registry UI}

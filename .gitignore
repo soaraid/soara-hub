@@ -1,3 +1,4 @@
 /auth/htpasswd
 /data/
+.env
 .DS_Store
